@@ -1,0 +1,32 @@
+version: "3.8"
+services:
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - 11434:11434
+    volumes:
+      - ollama:/root/.ollama
+      - ./entrypoint.sh:/entrypoint.sh
+    container_name: ollama
+    pull_policy: always
+    tty: true
+    restart: always
+    entrypoint: [ "/usr/bin/bash", "/entrypoint.sh" ]
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:main
+    ports:
+      - 3000:8080
+    container_name: openwebui
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - WEBUI_AUTH=false
+      - OLLAMA_BASE_URL=http://ollama:11434
+    restart: always
+    volumes:
+      - open-webui:/app/backend/data
+    depends_on:
+      - ollama
+volumes:
+  ollama:
+  open-webui:
